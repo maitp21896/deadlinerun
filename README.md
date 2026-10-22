@@ -14,14 +14,17 @@ npm run dev -- --port 5173
 ```sh
 npm test
 npm run build
+npm run test:e2e
 ```
+
+Kiểm tra trình duyệt dùng Chromium có sẵn trên máy cloud. Trên máy khác, chạy `npx playwright install chromium` một lần trước khi chạy `npm run test:e2e`.
 
 Dữ liệu nhiệm vụ, xu, XP, phần thưởng và vé được lưu trong localStorage của trình duyệt; chưa đồng bộ tài khoản. Mỗi nhiệm vụ hoàn thành nhận 20 xu và 30 XP, chỉ nhận một lần. Mỗi lượt quay tốn 20 xu, luôn có thưởng. Người dùng có thể thêm phần thưởng, chỉnh trọng số xác suất và dùng vé trong túi đồ. Tài khoản mới có 30 xu để thử.
 
-Bộ đếm dùng thời điểm kết thúc thực tế để tránh trôi thời gian khi tab chạy nền. Phiên đang chạy chưa được khôi phục sau khi tải lại trang. Font Google có font hệ thống dự phòng. Không có thanh toán hoặc tiền thật.
+Bộ đếm dùng thời điểm kết thúc thực tế để tránh trôi thời gian khi tab chạy nền. Phiên đang chạy hoặc tạm dừng được khôi phục sau khi tải lại trang trên cùng trình duyệt. Font Google có font hệ thống dự phòng. Không có thanh toán hoặc tiền thật.
 
-## Đấu trường pixel
+## Hành trình tập trung tự động
 
-Mở **Đấu trường pixel** hoặc **Vào đấu trường** từ trang nhiệm vụ. A/D hoặc mũi tên để di chuyển, Space/W/mũi tên lên để nhảy, J để vung kiếm, P để tạm dừng. Trên điện thoại dùng các nút dưới màn hình. Khi chuyển sang ứng dụng hoặc tab khác, trận đấu tự tạm dừng.
+Mở **Trạm tập trung**, chọn 15/25/45 phút và bấm **Bắt đầu tập trung**. Nhân vật tự chạy, nhảy qua hố/chướng ngại và đánh quái; không cần điều khiển bằng phím hay nút game. Cảnh đi qua đồng cỏ (0–30%), rừng (30–65%), cổng thành (65–90%) và đánh boss trong 10% thời gian cuối. Hết giờ, boss bị đánh bại và nhân vật về đích.
 
-Ba đợt gồm slime, bóng ma và boss Trì Hoãn. Boss lóe sáng trước khi lao tới. Nhân vật có 100 HP và hồi 20 HP khi qua đợt. Mỗi nhiệm vụ hoàn thành tăng 2 sát thương (tối đa +40). Chiến thắng lưu số lần vượt ải; trận đang chơi không lưu sau khi rời màn hình hoặc tải lại. Trận đấu không tạo thêm xu quay thưởng.
+Hoạt ảnh lấy tiến độ trực tiếp từ thời gian tập trung đã trôi qua. Tạm dừng đóng băng cả đồng hồ lẫn nhân vật. Chuyển tab để làm việc vẫn tiếp tục phiên; quay lại hoặc tải lại sẽ ở đúng tiến độ. Đặt lại bắt đầu hành trình mới. Số phiên hoàn thành được lưu riêng và chỉ tăng một lần mỗi phiên. Nhiệm vụ không tự hoàn thành khi hết giờ: người dùng xác nhận đã làm xong để nhận xu và XP.
