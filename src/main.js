@@ -1,3 +1,5 @@
+import { daylight, quoteModes, focusQuote } from "./motivation.js";
+let focusQuoteOffset = 0;
 import "./style.css";
 import {
   newSession,
@@ -96,7 +98,10 @@ ${
   bind();
   updateClock();
   if (tab === "focus")
-    stopJourney = startJourney(() => readSession(state.focusSession));
+    stopJourney = startJourney(() => ({
+      ...readSession(state.focusSession),
+      scenery: state.journeyScenery || "auto",
+    }));
 }
 function taskCard(t) {
   const hours = (new Date(t.due) - Date.now()) / 36e5;
@@ -116,7 +121,28 @@ function focusView() {
     snapshot = readSession(session),
     selected = state.tasks.find((t) => t.id === session.taskId);
   const ongoing = ["running", "paused"].includes(snapshot.status);
-  return `<section class="focus-adventure"><div class="focus-session-heading"><div><span class="eyebrow">YOUR FOCUS, THEIR ADVENTURE</span><h2>${esc(selected?.title || "Một chặng đường dành riêng cho bạn")}</h2></div><span class="session-state" id="session-state"></span></div><div class="journey-landscape"><canvas id="journey-canvas" width="960" height="420" role="img" aria-label="Hành trình pixel tự động: nhân vật chạy, nhảy qua chướng ngại và đánh boss theo tiến độ phiên tập trung."></canvas><div class="journey-scene-label"><span class="scene-live-dot"></span><span id="chapter-label"></span><span class="auto-label">AUTO ADVENTURE</span></div></div><div class="journey-route"><div class="route-line"><span id="route-fill"></span></div>${[
+  return `<section class="focus-adventure"><div class="focus-session-heading"><div><span class="eyebrow">YOUR FOCUS, THEIR ADVENTURE</span><h2>${esc(selected?.title || "Một chặng đường dành riêng cho bạn")}</h2></div><span class="session-state" id="session-state"></span></div><div class="journey-landscape"><canvas id="journey-canvas" width="960" height="420" role="img" aria-label="Hành trình pixel tự động: nhân vật chạy, nhảy qua chướng ngại và đánh boss theo tiến độ phiên tập trung."></canvas><div class="journey-scene-label"><span class="scene-live-dot"></span><span id="chapter-label"></span><span class="auto-label" id="daylight-label"></span></div><div class="journey-hud"><span>THỜI GIAN CÒN LẠI</span><strong id="journey-clock"></strong><small id="hud-percent"></small></div><div class="journey-quote"><span>🐸 ĐỒNG ĐỘI NHẮN BẠN</span><blockquote id="focus-quote"></blockquote><button id="next-focus-quote" aria-label="Đổi quote tập trung">↻</button></div></div><div class="journey-settings"><label>Cảnh nền<select id="journey-scenery">${[
+    ["auto", "Theo hành trình"],
+    ["meadow", "Đồng cỏ"],
+    ["forest", "Khu rừng"],
+    ["coast", "Bờ biển"],
+  ]
+    .map(
+      ([v, l]) =>
+        `<option value="${v}" ${(state.journeyScenery || "auto") === v ? "selected" : ""}>${l}</option>`,
+    )
+    .join(
+      "",
+    )}</select></label><label>Giọng động viên<select id="quote-mode">${Object.entries(
+    quoteModes,
+  )
+    .map(
+      ([v, l]) =>
+        `<option value="${v}" ${(state.quoteMode || "mixed") === v ? "selected" : ""}>${l}</option>`,
+    )
+    .join(
+      "",
+    )}</select></label><span>Quote đổi mỗi phút tập trung · Ngày/đêm theo tiến độ phiên</span></div><div class="session-progress"><div><span>HÀNH TRÌNH CỦA BẠN</span><strong id="progress-percent"></strong></div><div id="focus-progress" role="progressbar" aria-label="Tiến độ phiên tập trung" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="focus-progress-fill"></span></div><small id="progress-time"></small></div><div class="journey-route"><div class="route-line"><span id="route-fill"></span></div>${[
     ["meadow", "01", "Đồng cỏ", 0],
     ["forest", "02", "Khu rừng", 0.3],
     ["castle", "03", "Cổng thành", 0.65],
@@ -128,7 +154,7 @@ function focusView() {
     )
     .join(
       "",
-    )}</div><div class="focus-console"><div class="focus-clock-wrap"><span class="eyebrow">${snapshot.status === "complete" ? "MỘT CHẶNG ĐƯỜNG ĐÃ HOÀN THÀNH" : "THỜI GIAN DÀNH CHO ĐIỀU QUAN TRỌNG"}</span><div class="timer" id="clock" role="timer" aria-label="Thời gian tập trung còn lại"></div><p id="journey-status" role="status" aria-live="polite"></p></div><div class="focus-console-controls"><div class="duration-picker">${[15, 25, 45].map((n) => `<button data-duration="${n}" class="${session.totalMs === n * 60000 ? "active" : ""}" ${ongoing ? "disabled" : ""}>${n} phút</button>`).join("")}</div><div class="focus-actions"><button class="button dark" id="toggle-timer">${snapshot.status === "running" ? "Tạm dừng" : snapshot.status === "paused" ? "Tiếp tục hành trình →" : snapshot.status === "complete" ? "Bắt đầu phiên mới →" : "Bắt đầu tập trung →"}</button><button class="button outline" id="reset-timer" aria-label="Đặt lại phiên tập trung">↻</button></div>${snapshot.status === "complete" && selected && !selected.done ? '<button class="text-button" id="complete-focus-task">Tôi đã làm xong nhiệm vụ · Nhận 20 xu ✓</button>' : '<span class="focus-hint">Cứ làm việc của bạn. Nhân vật sẽ tự lo phần còn lại.</span>'}</div></div><div class="focus-bottom"><span>✦ ${state.focusRuns || 0} hành trình đã hoàn thành</span><span>Tiến độ vẫn tiếp tục khi bạn chuyển tab làm việc.</span></div></section><div class="journey-note"><span>☁</span><p>“${quotes[quoteIndex]}”<small>Bạn không cần điều khiển nhân vật. Bấm bắt đầu, rồi dành thời gian cho nhiệm vụ của mình.</small></p></div>`;
+    )}</div><div class="focus-console"><div class="focus-clock-wrap"><span class="eyebrow">${snapshot.status === "complete" ? "MỘT CHẶNG ĐƯỜNG ĐÃ HOÀN THÀNH" : "THỜI GIAN DÀNH CHO ĐIỀU QUAN TRỌNG"}</span><div class="timer" id="clock" role="timer" aria-label="Thời gian tập trung còn lại"></div><p id="journey-status" role="status" aria-live="polite"></p></div><div class="focus-console-controls"><div class="duration-picker">${[15, 25, 45].map((n) => `<button data-duration="${n}" class="${session.totalMs === n * 60000 ? "active" : ""}" ${ongoing ? "disabled" : ""}>${n} phút</button>`).join("")}</div><div class="focus-actions"><button class="button dark" id="toggle-timer">${snapshot.status === "running" ? "Tạm dừng" : snapshot.status === "paused" ? "Tiếp tục hành trình →" : snapshot.status === "complete" ? "Bắt đầu phiên mới →" : "Bắt đầu tập trung →"}</button><button class="button outline" id="reset-timer" aria-label="Đặt lại phiên tập trung">↻</button></div>${snapshot.status === "complete" && selected && !selected.done ? '<button class="text-button" id="complete-focus-task">Tôi đã làm xong nhiệm vụ · Nhận 20 xu ✓</button>' : '<span class="focus-hint">Cứ làm việc của bạn. Nhân vật sẽ tự lo phần còn lại.</span>'}</div></div><div class="focus-bottom"><span>✦ ${state.focusRuns || 0} hành trình đã hoàn thành</span><span>Tiến độ vẫn tiếp tục khi bạn chuyển tab làm việc.</span></div></section><div class="journey-note"><span>☁</span><p>Mỗi phút tập trung là một đoạn đường đã đi.<small>Bạn làm việc, người bạn nhỏ tiếp tục hành trình. Nghỉ một chút bất cứ khi nào bạn cần.</small></p></div>`;
 }
 function rewardView() {
   return `<section class="shop-grid"><div class="slot-panel"><span class="eyebrow">THE LITTLE JOY MACHINE</span><h2>Một vòng quay. Một niềm vui.</h2><p>20 xu mỗi lượt · Lượt nào cũng có quà</p><div class="slot-machine"><div class="slot-top">★ LUCKY LITTLE BREAK ★</div><div class="reels"><span>🎬</span><span>🍪</span><span>🎮</span></div><div class="slot-bottom">GOOD WORK DESERVES GOOD THINGS</div></div><button class="button dark spin-button" id="spin" ${state.coins < 20 || spinning ? "disabled" : ""}>${spinning ? "Đang quay…" : "✦ Quay thưởng · 20 xu"}</button><div id="spin-result" role="status"></div><p class="small-muted">${state.coins < 20 ? "Hoàn thành một nhiệm vụ để kiếm thêm xu." : "Bạn có " + state.coins + " xu. Chúc bạn có một khoảng nghỉ thật vui!"}</p></div><div class="reward-options"><div class="section-heading"><h2>Menu niềm vui</h2><button class="text-button" id="add-reward">＋ Thêm</button></div><p class="small-muted">Tự chọn những điều khiến bạn vui. Xác suất theo tần suất đã chọn.</p>${state.rewards
@@ -177,6 +203,35 @@ function updateClock() {
     clock.textContent = `${Math.floor(seconds / 60)
       .toString()
       .padStart(2, "0")}:${(seconds % 60).toString().padStart(2, "0")}`;
+  const hudClock = document.querySelector("#journey-clock");
+  if (hudClock && clock) hudClock.textContent = clock.textContent;
+  const percent =
+    snapshot.status === "complete" ? 100 : Math.floor(snapshot.progress * 100);
+  for (const id of ["hud-percent", "progress-percent"]) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = `${percent}% hoàn thành`;
+  }
+  const progressBar = document.querySelector("#focus-progress");
+  if (progressBar) {
+    progressBar.setAttribute("aria-valuenow", String(percent));
+    document.querySelector("#focus-progress-fill").style.width =
+      `${snapshot.progress * 100}%`;
+    document.querySelector("#progress-time").textContent =
+      `${Math.floor(snapshot.elapsedMs / 60000)} / ${state.focusSession.totalMs / 60000} phút đã tập trung`;
+  }
+  const lightingLabel = document.querySelector("#daylight-label");
+  if (lightingLabel)
+    lightingLabel.textContent = daylight(snapshot.progress).label;
+  const quote = document.querySelector("#focus-quote");
+  if (quote) {
+    const message = focusQuote(
+      state.quoteMode || "mixed",
+      snapshot.elapsedMs,
+      focusQuoteOffset,
+      snapshot.status,
+    );
+    if (quote.textContent !== message) quote.textContent = message;
+  }
   const badge = document.querySelector("#session-state");
   if (badge) {
     badge.textContent = {
@@ -211,6 +266,23 @@ function tickFocus() {
   updateClock();
 }
 function bind() {
+  document.querySelector("#next-focus-quote")?.addEventListener("click", () => {
+    focusQuoteOffset++;
+    updateClock();
+  });
+  document.querySelector("#quote-mode")?.addEventListener("change", (e) => {
+    state.quoteMode = e.target.value;
+    focusQuoteOffset = 0;
+    save();
+    updateClock();
+  });
+  document
+    .querySelector("#journey-scenery")
+    ?.addEventListener("change", (e) => {
+      state.journeyScenery = e.target.value;
+      save();
+    });
+
   document.querySelectorAll("[data-tab]").forEach(
     (b) =>
       (b.onclick = () => {

@@ -1904,3 +1904,225 @@ dialog .button {
     font-size: 8px;
   }
 }
+.journey-hud {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  background: #273e35ed;
+  color: #f2eed4;
+  border: 1px solid #b7c69c66;
+  padding: 12px 19px;
+  min-width: 135px;
+  border-radius: 4px;
+  text-align: center;
+  box-shadow: 3px 3px #243e3433;
+}
+.journey-hud > span {
+  font-size: 7px;
+  letter-spacing: 1px;
+  display: block;
+  color: #bbc9aa;
+}
+.journey-hud strong {
+  display: block;
+  font:
+    600 31px "Space Grotesk",
+    monospace;
+  margin: 5px 0;
+  font-variant-numeric: tabular-nums;
+}
+.journey-hud small {
+  font-size: 8px;
+  color: #d0dcae;
+}
+.journey-quote {
+  position: absolute;
+  left: 22px;
+  top: 72px;
+  width: 260px;
+  background: #fffcf0f0;
+  border: 2px solid #b8c5a2;
+  border-radius: 5px;
+  box-shadow: 4px 4px #657b4b22;
+  padding: 14px 28px 14px 16px;
+}
+.journey-quote:after {
+  content: "";
+  position: absolute;
+  left: 30px;
+  bottom: -10px;
+  width: 14px;
+  height: 14px;
+  background: #fffcf0;
+  border-right: 2px solid #b8c5a2;
+  border-bottom: 2px solid #b8c5a2;
+  transform: rotate(45deg);
+}
+.journey-quote > span {
+  font-size: 7px;
+  letter-spacing: 0.7px;
+  color: #86976f;
+}
+.journey-quote blockquote {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #43583c;
+  margin: 9px 0 0;
+  font-weight: 550;
+}
+.journey-quote button {
+  position: absolute;
+  top: 8px;
+  right: 7px;
+  border: 0;
+  background: transparent;
+  color: #79915d;
+  font-size: 18px;
+  padding: 4px;
+}
+.journey-settings {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 17px 28px;
+  border-bottom: 1px solid #edf0e5;
+  background: #fbfcf7;
+}
+.journey-settings label {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 9px;
+  white-space: nowrap;
+}
+.journey-settings select {
+  margin: 0;
+  width: auto;
+  padding: 7px 9px;
+  font-size: 10px;
+  background: #fff;
+}
+.journey-settings > span {
+  margin-left: auto;
+  max-width: 180px;
+  font-size: 8px;
+  line-height: 1.8;
+  color: #9ca58e;
+}
+.session-progress {
+  padding: 24px 38px 0;
+}
+.session-progress > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.session-progress > div > span {
+  font-size: 8px;
+  color: #909d7f;
+  letter-spacing: 1px;
+}
+.session-progress strong {
+  font-size: 10px;
+  color: #607c42;
+}
+#focus-progress {
+  height: 11px;
+  background: #edf1e5;
+  border: 1px solid #dce5cc;
+  border-radius: 3px;
+  overflow: hidden;
+}
+#focus-progress-fill {
+  height: 100%;
+  display: block;
+  background: repeating-linear-gradient(
+    90deg,
+    #9fbf70 0 10px,
+    #aac67d 10px 12px
+  );
+  width: 0;
+}
+.session-progress > small {
+  display: block;
+  text-align: right;
+  color: #98a488;
+  font-size: 8px;
+  margin-top: 7px;
+}
+.journey-route {
+  margin-top: 18px;
+}
+@media (max-width: 760px) {
+  .journey-hud {
+    top: 8px;
+    right: 9px;
+    padding: 6px 10px;
+    min-width: 85px;
+  }
+  .journey-hud > span {
+    font-size: 5px;
+    letter-spacing: 0.4px;
+  }
+  .journey-hud strong {
+    font-size: 21px;
+    margin: 2px 0;
+  }
+  .journey-hud small {
+    font-size: 6px;
+  }
+  .journey-quote {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: auto;
+    margin: 0;
+    padding: 12px 38px 12px 16px;
+    border: 0;
+    border-top: 1px solid #c2ccad;
+    border-radius: 0;
+    background: #f7f8eb;
+  }
+  .journey-quote:after {
+    display: none;
+  }
+  .journey-quote blockquote {
+    font-size: 12px;
+    margin-top: 5px;
+  }
+  .journey-settings {
+    padding: 14px 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .journey-settings label {
+    font-size: 8px;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .journey-settings select {
+    width: 100%;
+    font-size: 10px;
+    padding: 8px;
+  }
+  .journey-settings > span {
+    max-width: none;
+    margin: 0;
+    font-size: 7px;
+    flex-basis: 100%;
+  }
+  .session-progress {
+    padding: 20px 20px 0;
+  }
+  .auto-label {
+    display: inline;
+    font-size: 6px;
+    letter-spacing: 0;
+    padding-left: 6px;
+    margin-left: 2px;
+  }
+}

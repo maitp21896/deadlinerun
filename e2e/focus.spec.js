@@ -151,3 +151,62 @@ test("mobile focus has one start button, no gameplay input and no horizontal ove
     fullPage: true,
   });
 });
+
+test("progress, HUD clock, day/night, scenery and motivational quotes stay in sync", async ({
+  page,
+}) => {
+  await begin(page);
+  const canvas = page.locator("#journey-canvas");
+  await expect(page.locator("#journey-clock")).toHaveText(
+    await page.locator("#clock").textContent(),
+  );
+  await expect(page.locator("#focus-progress")).toHaveAttribute(
+    "aria-valuenow",
+    "0",
+  );
+  const firstQuote = await page.locator("#focus-quote").textContent();
+  await page.locator("#next-focus-quote").click();
+  await expect(page.locator("#focus-quote")).not.toHaveText(firstQuote);
+  await page.locator("#quote-mode").selectOption("funny");
+  await expect(page.locator("#focus-quote")).toHaveText(
+    "Làm 15 phút đi, rồi mình hoảng tiếp.",
+  );
+  await advanceTo(page, 61 / 900);
+  await expect(page.locator("#focus-quote")).toContainText("final_final_v7");
+  await advanceTo(page, 0.45);
+  await expect(canvas).toHaveAttribute("data-daylight", "sunset");
+  await expect(page.locator("#focus-progress")).toHaveAttribute(
+    "aria-valuenow",
+    "45",
+  );
+  await expect(page.locator("#journey-clock")).toHaveText(
+    await page.locator("#clock").textContent(),
+  );
+  await page.locator("#journey-scenery").selectOption("coast");
+  await page.clock.runFor(50);
+  await expect(canvas).toHaveAttribute("data-scenery", "coast");
+  await advanceTo(page, 0.75);
+  await expect(canvas).toHaveAttribute("data-daylight", "night");
+  await expect(page.locator("#daylight-label")).toHaveText("Ban đêm");
+  await page.screenshot({
+    path: "test-results/focus-night.png",
+    fullPage: true,
+  });
+  await page.locator("#toggle-timer").click();
+  const quote = await page.locator("#focus-quote").textContent();
+  const clock = await page.locator("#journey-clock").textContent();
+  await page.clock.fastForward(61000);
+  await expect(page.locator("#focus-quote")).toHaveText(quote);
+  await expect(page.locator("#journey-clock")).toHaveText(clock);
+  await page.reload();
+  await expect(page.locator("#quote-mode")).toHaveValue("funny");
+  await expect(page.locator("#journey-scenery")).toHaveValue("coast");
+  await page.locator("#toggle-timer").click();
+  await advanceTo(page, 1);
+  await expect(page.locator("#focus-progress")).toHaveAttribute(
+    "aria-valuenow",
+    "100",
+  );
+  await expect(page.locator("#journey-clock")).toHaveText("00:00");
+  await expect(canvas).toHaveAttribute("data-daylight", "dawn");
+});

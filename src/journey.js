@@ -1,4 +1,5 @@
 import { chapterNames } from "./focus.js";
+import { daylight } from "./motivation.js";
 
 // Every position is derived from focused elapsed time. Pausing, navigation and
 // background-tab throttling cannot advance or rewind the scenery independently.
@@ -164,39 +165,19 @@ export function startJourney(getSnapshot) {
     }
   }
   function draw(snapshot) {
-    const pose = journeyPose(snapshot),
-      forest = snapshot.chapter === "forest",
-      castle = ["castle", "boss"].includes(snapshot.chapter),
+    const pose = journeyPose(snapshot);
+    const scenery =
+      snapshot.scenery && snapshot.scenery !== "auto"
+        ? snapshot.scenery
+        : snapshot.chapter;
+    const forest = scenery === "forest",
+      coast = scenery === "coast";
+    const castle = ["castle", "boss"].includes(scenery),
       finish = snapshot.chapter === "finish";
-    const palette = castle
-      ? {
-          sky: "#283a49",
-          haze: "#435765",
-          far: "#3c5159",
-          hill: "#526b67",
-          tree: "#466a5b",
-          earth: "#746653",
-          grass: "#a5b67a",
-        }
-      : forest
-        ? {
-            sky: "#bfd1bf",
-            haze: "#d6dfbc",
-            far: "#8faa98",
-            hill: "#7d9d84",
-            tree: "#537e66",
-            earth: "#9d8866",
-            grass: "#90ad70",
-          }
-        : {
-            sky: "#d9e9dd",
-            haze: "#eaf0d5",
-            far: "#b7ceb0",
-            hill: "#a5c39e",
-            tree: "#779a71",
-            earth: "#b29b75",
-            grass: "#92b274",
-          };
+    const lighting = daylight(snapshot.progress),
+      palette = lighting.palette;
+    canvas.dataset.daylight = lighting.phase;
+    canvas.dataset.scenery = scenery;
     const boss = snapshot.chapter === "boss";
     // Keep the boss arena stationary while its health follows session progress.
     const scroll =
@@ -205,14 +186,41 @@ export function startJourney(getSnapshot) {
         : pose.distance) || 0;
     rect(0, 0, 960, 420, palette.sky);
     rect(0, 162, 960, 175, palette.haze);
-    rect(759, 51, 40, 40, castle ? "#ded6ab" : "#f3dc9f");
-    rect(752, 58, 54, 26, castle ? "#ded6ab" : "#f3dc9f");
+    if (lighting.night > 0) {
+      ctx.globalAlpha = lighting.night;
+      for (let i = 0; i < 44; i++) {
+        const x = (i * 137 + 17) % 960,
+          y = 35 + ((i * 53) % 115);
+        rect(x, y, 2, 2, "#f0e8c9");
+      }
+      ctx.globalAlpha = 1;
+    }
+    const celestialY =
+      lighting.phase === "sunset" ? 122 : lighting.phase === "dawn" ? 104 : 53;
+    rect(
+      759,
+      celestialY,
+      40,
+      40,
+      lighting.phase === "night" ? "#e7e5c6" : "#f3d49b",
+    );
+    rect(
+      752,
+      celestialY + 7,
+      54,
+      26,
+      lighting.phase === "night" ? "#e7e5c6" : "#f3d49b",
+    );
+    if (lighting.phase === "night") {
+      rect(777, celestialY - 3, 30, 25, palette.sky);
+      rect(787, celestialY + 15, 20, 13, palette.sky);
+    }
     for (let i = -1; i < 6; i++)
       cloud(
         i * 247 - ((scroll * 0.1) % 247),
         69 + (i % 3) * 19,
         0.8,
-        castle ? "#526571" : "#f6f5df",
+        palette.cloud,
       );
     for (let i = -1; i < 7; i++) {
       const x = i * 210 - ((scroll * 0.2) % 210);
@@ -220,7 +228,26 @@ export function startJourney(getSnapshot) {
       rect(x + 26, 184 - (i % 2) * 28, 150, 153, palette.far);
       rect(x + 52, 168 - (i % 2) * 28, 96, 169, palette.far);
     }
-    if (castle) {
+    if (coast) {
+      rect(
+        0,
+        225,
+        960,
+        112,
+        lighting.phase === "night" ? "#375872" : "#80b6b2",
+      );
+      for (let i = 0; i < 18; i++) {
+        const x = i * 85 - ((scroll * 0.4) % 85);
+        rect(
+          x,
+          245 + (i % 3) * 25,
+          40,
+          3,
+          lighting.phase === "night" ? "#668897" : "#c0ded1",
+        );
+      }
+      rect(0, 312, 960, 25, "#c3b28c");
+    } else if (castle) {
       for (let i = -1; i < 4; i++) {
         const x = i * 380 - ((scroll * 0.35) % 380);
         rect(x, 179, 154, 158, "#51676b");
@@ -359,7 +386,7 @@ export function startJourney(getSnapshot) {
   }
   function loop() {
     const snap = getSnapshot();
-    const key = `${snap.status}:${snap.chapter}:${Math.floor(snap.elapsedMs / 1000)}`;
+    const key = `${snap.status}:${snap.chapter}:${snap.scenery}:${Math.floor(snap.elapsedMs / 1000)}`;
     if (!reduced || key !== lastStaticKey) {
       draw(
         reduced

@@ -28,3 +28,7 @@ Bộ đếm dùng thời điểm kết thúc thực tế để tránh trôi th�
 Mở **Trạm tập trung**, chọn 15/25/45 phút và bấm **Bắt đầu tập trung**. Nhân vật tự chạy, nhảy qua hố/chướng ngại và đánh quái; không cần điều khiển bằng phím hay nút game. Cảnh đi qua đồng cỏ (0–30%), rừng (30–65%), cổng thành (65–90%) và đánh boss trong 10% thời gian cuối. Hết giờ, boss bị đánh bại và nhân vật về đích.
 
 Hoạt ảnh lấy tiến độ trực tiếp từ thời gian tập trung đã trôi qua. Tạm dừng đóng băng cả đồng hồ lẫn nhân vật. Chuyển tab để làm việc vẫn tiếp tục phiên; quay lại hoặc tải lại sẽ ở đúng tiến độ. Đặt lại bắt đầu hành trình mới. Số phiên hoàn thành được lưu riêng và chỉ tăng một lần mỗi phiên. Nhiệm vụ không tự hoàn thành khi hết giờ: người dùng xác nhận đã làm xong để nhận xu và XP.
+
+Trong khung hành trình có đồng hồ còn lại, phần trăm tiến độ và quote của người bạn đồng hành. Thanh tiến độ chạy từ 0–100% theo thời lượng thực tế của phiên. Bầu trời chuyển ngày → hoàng hôn → đêm → bình minh theo tiến độ (không theo giờ địa phương). Có thể giữ cảnh tự động theo từng chặng hoặc chọn đồng cỏ, rừng, bờ biển mà không đặt lại đồng hồ.
+
+Quote đổi sau mỗi phút tập trung, dừng cùng phiên và có nút đổi thủ công. Các giọng gồm xen kẽ, dễ thương, hài hước, thực tế và thúc nhẹ; giọng thúc nhẹ được chọn riêng. Lựa chọn cảnh và giọng động viên được lưu trên trình duyệt.
