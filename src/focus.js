@@ -22,11 +22,15 @@ export function readSession(session, now = Date.now()) {
       ? "finish"
       : progress >= 0.9
         ? "boss"
-        : progress >= 0.65
+        : progress >= 0.8
           ? "castle"
-          : progress >= 0.3
-            ? "forest"
-            : "meadow";
+          : progress >= 0.6
+            ? "ocean"
+            : progress >= 0.4
+              ? "cave"
+              : progress >= 0.2
+                ? "forest"
+                : "meadow";
   return {
     status,
     totalMs: session.totalMs,
@@ -74,6 +78,8 @@ export function restoreSession(value) {
 export const chapterNames = {
   meadow: "Đồng cỏ khởi đầu",
   forest: "Khu rừng tập trung",
+  cave: "Đường hầm pha lê",
+  ocean: "Biển xanh tĩnh lặng",
   castle: "Cổng thành deadline",
   boss: "Đối đầu Trì Hoãn",
   finish: "Về đích rồi!",

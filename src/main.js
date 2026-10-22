@@ -126,6 +126,8 @@ function focusView() {
     ["meadow", "Đồng cỏ"],
     ["forest", "Khu rừng"],
     ["coast", "Bờ biển"],
+    ["cave", "Đường hầm"],
+    ["ocean", "Dưới biển"],
   ]
     .map(
       ([v, l]) =>
@@ -142,11 +144,13 @@ function focusView() {
     )
     .join(
       "",
-    )}</select></label><span>Quote đổi mỗi phút tập trung · Ngày/đêm theo tiến độ phiên</span></div><div class="session-progress"><div><span>HÀNH TRÌNH CỦA BẠN</span><strong id="progress-percent"></strong></div><div id="focus-progress" role="progressbar" aria-label="Tiến độ phiên tập trung" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="focus-progress-fill"></span></div><small id="progress-time"></small></div><div class="journey-route"><div class="route-line"><span id="route-fill"></span></div>${[
+    )}</select></label><span>Quote đổi mỗi phút tập trung · Ngày/đêm theo giờ trên thiết bị</span></div><div class="session-progress"><div><span>HÀNH TRÌNH CỦA BẠN</span><strong id="progress-percent"></strong></div><div id="focus-progress" role="progressbar" aria-label="Tiến độ phiên tập trung" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="focus-progress-fill"></span></div><small id="progress-time"></small></div><div class="journey-route"><div class="route-line"><span id="route-fill"></span></div>${[
     ["meadow", "01", "Đồng cỏ", 0],
-    ["forest", "02", "Khu rừng", 0.3],
-    ["castle", "03", "Cổng thành", 0.65],
-    ["boss", "04", "Boss cuối", 0.9],
+    ["forest", "02", "Khu rừng", 0.2],
+    ["cave", "03", "Chui hầm", 0.4],
+    ["ocean", "04", "Bơi biển", 0.6],
+    ["castle", "05", "Cổng thành", 0.8],
+    ["boss", "06", "Boss cuối", 0.9],
   ]
     .map(
       ([id, n, label, at]) =>
@@ -220,8 +224,7 @@ function updateClock() {
       `${Math.floor(snapshot.elapsedMs / 60000)} / ${state.focusSession.totalMs / 60000} phút đã tập trung`;
   }
   const lightingLabel = document.querySelector("#daylight-label");
-  if (lightingLabel)
-    lightingLabel.textContent = daylight(snapshot.progress).label;
+  if (lightingLabel) lightingLabel.textContent = daylight().label;
   const quote = document.querySelector("#focus-quote");
   if (quote) {
     const message = focusQuote(
@@ -243,7 +246,12 @@ function updateClock() {
     badge.dataset.status = snapshot.status;
   }
   const label = document.querySelector("#chapter-label");
-  if (label) label.textContent = chapterNames[snapshot.chapter];
+  if (label)
+    label.textContent =
+      state.journeyScenery && state.journeyScenery !== "auto"
+        ? { coast: "Bờ biển", ...chapterNames }[state.journeyScenery] ||
+          chapterNames[snapshot.chapter]
+        : chapterNames[snapshot.chapter];
   const fill = document.querySelector("#route-fill");
   if (fill)
     fill.style.width = `${Math.min(100, (snapshot.progress / 0.9) * 100)}%`;

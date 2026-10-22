@@ -2126,3 +2126,24 @@ dialog .button {
     margin-left: 2px;
   }
 }
+@media (max-width: 760px) {
+  .journey-route {
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+  .route-stop {
+    min-width: 0;
+    flex: 1;
+  }
+  .route-stop small {
+    font-size: 6px;
+  }
+  .route-stop > span {
+    width: 22px;
+    height: 22px;
+  }
+  .route-line {
+    left: 22px;
+    right: 22px;
+  }
+}

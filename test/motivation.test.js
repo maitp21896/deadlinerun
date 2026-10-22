@@ -8,15 +8,29 @@ test("quotes rotate by focused minutes and manual offset, with separate opt-in p
   assert.notEqual(focusQuote("push", 0), focusQuote("mixed", 0));
   assert.match(focusQuote("push", 1, 0, "complete"), /nghỉ một chút/);
 });
-test("daylight blends continuously and returns to dawn at completion", () => {
-  assert.equal(daylight(0).phase, "day");
-  assert.equal(daylight(0.45).phase, "sunset");
-  assert.equal(daylight(0.75).phase, "night");
-  assert.equal(daylight(1).phase, "dawn");
-  assert.equal(daylight(0.75).night, 1);
-  assert.notEqual(daylight(0.4).palette.sky, daylight(0.41).palette.sky);
-  assert.equal(daylight(0.75).palette.sky, "#1f304b");
-  for (const p of [0, 0.3, 0.45, 0.6, 0.75, 0.9, 1])
-    for (const hex of Object.values(daylight(p).palette))
+const at = (h, m = 0, s = 0) => new Date(2026, 9, 22, h, m, s);
+test("daylight follows local clock boundaries rather than focus progress", () => {
+  for (const [h, m, phase] of [
+    [0, 0, "night"],
+    [4, 59, "night"],
+    [5, 0, "dawn"],
+    [6, 59, "dawn"],
+    [7, 0, "day"],
+    [16, 59, "day"],
+    [17, 0, "sunset"],
+    [18, 59, "sunset"],
+    [19, 0, "night"],
+    [23, 59, "night"],
+  ])
+    assert.equal(daylight(at(h, m)).phase, phase);
+  assert.equal(daylight(at(22)).night, 1);
+  assert.equal(daylight(at(12)).night, 0);
+  assert.notEqual(
+    daylight(at(18)).palette.sky,
+    daylight(at(18, 1)).palette.sky,
+  );
+  assert.deepEqual(daylight(at(23, 59, 59)).palette, daylight(at(0)).palette);
+  for (let h = 0; h < 24; h++)
+    for (const hex of Object.values(daylight(at(h)).palette))
       assert.match(hex, /^#[0-9a-f]{6}$/);
 });

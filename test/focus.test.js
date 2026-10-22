@@ -35,8 +35,10 @@ test("all durations reach the boss at 90%, and victory only when time expires", 
     resumeSession(s, 0);
     for (const [progress, chapter] of [
       [0, "meadow"],
-      [0.3, "forest"],
-      [0.65, "castle"],
+      [0.2, "forest"],
+      [0.4, "cave"],
+      [0.6, "ocean"],
+      [0.8, "castle"],
       [0.9, "boss"],
       [0.99, "boss"],
       [1, "finish"],
@@ -76,5 +78,26 @@ test("invalid persisted timer data falls back to an idle session", () => {
   assert.deepEqual(
     restoreSession({ status: "running", totalMs: -1 }),
     newSession(),
+  );
+});
+
+test("cave crouching and ocean swimming are automatic, reproducible and yield to the boss", () => {
+  const s = newSession(15);
+  resumeSession(s, 0);
+  const cave = { ...readSession(s, (350 / 66) * 1000), scenery: "cave" };
+  assert.equal(journeyPose(cave).action, "duck");
+  assert.equal(journeyPose(cave).jump, 0);
+  const ocean = { ...readSession(s, (350 / 66) * 1000), scenery: "ocean" };
+  assert.equal(journeyPose(ocean).action, "swim");
+  assert.equal(journeyPose(ocean).jump, 0);
+  assert.deepEqual(journeyPose(ocean), journeyPose(ocean));
+  assert.equal(
+    journeyPose({ ...readSession(s, s.totalMs * 0.95), scenery: "ocean" })
+      .action,
+    "battle",
+  );
+  assert.equal(
+    journeyPose({ ...readSession(s, s.totalMs), scenery: "ocean" }).action,
+    "celebrate",
   );
 });

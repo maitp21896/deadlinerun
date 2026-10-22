@@ -12,10 +12,29 @@ export function journeyPose(snapshot) {
   const encounter = obstacleIndex >= 0 && Math.abs(obstacleDistance) < 105;
   const combat = snapshot.chapter === "boss";
   const finished = snapshot.chapter === "finish";
+  const scenery =
+    snapshot.scenery && snapshot.scenery !== "auto"
+      ? snapshot.scenery
+      : snapshot.chapter;
+  const swim = scenery === "ocean" && !combat && !finished;
+  const cave = scenery === "cave" && !combat && !finished;
+  const duck = cave && obstacleIndex >= 0 && Math.abs(obstacleDistance) < 155;
+  const flight = (105 - obstacleDistance) / 210;
+  const landingAge = (-105 - obstacleDistance) / 66;
+  const landing =
+    !swim &&
+    !cave &&
+    !combat &&
+    !finished &&
+    obstacleIndex >= 0 &&
+    type !== 2 &&
+    landingAge >= 0 &&
+    landingAge < 0.28
+      ? 1 - landingAge / 0.28
+      : 0;
   const jump =
-    !combat && !finished && encounter && type !== 2
-      ? Math.sin((Math.PI * (105 - obstacleDistance)) / 210) *
-        (type === 1 ? 116 : 88)
+    !combat && !finished && !swim && !cave && encounter && type !== 2
+      ? 4 * flight * (1 - flight) * (type === 1 ? 116 : 88)
       : 0;
   return {
     seconds,
@@ -23,17 +42,24 @@ export function journeyPose(snapshot) {
     obstacleDistance,
     type,
     jump,
+    landing,
+    swim,
+    duck,
     action: finished
       ? "celebrate"
       : combat
         ? "battle"
         : snapshot.status === "idle"
           ? "idle"
-          : jump > 1
-            ? "jump"
-            : encounter && type === 2
-              ? "attack"
-              : "run",
+          : swim
+            ? "swim"
+            : duck
+              ? "duck"
+              : jump > 1
+                ? "jump"
+                : encounter && type === 2
+                  ? "attack"
+                  : "run",
   };
 }
 
@@ -41,7 +67,13 @@ export function startJourney(getSnapshot) {
   const canvas = document.querySelector("#journey-canvas");
   const ctx = canvas.getContext("2d");
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let frame, previousStatus, previousChapter, lastStaticKey;
+  let frame,
+    previousStatus,
+    previousChapter,
+    previousScenery,
+    previousStatusScenery,
+    transitionStart = 0,
+    lastStaticKey;
   const rect = (x, y, w, h, c) => {
     ctx.fillStyle = c;
     ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
@@ -72,12 +104,28 @@ export function startJourney(getSnapshot) {
     rect(x - size * 2, y - size * 2, size * 4, size * 4, color);
   }
   function hero(y, pose, snapshot) {
-    const running = pose.action === "run",
+    const running = pose.action === "run" || pose.action === "duck",
       attack = pose.action === "attack" || pose.action === "battle";
-    const stride = running ? Math.round(Math.sin(pose.seconds * 14) * 6) : 0;
+    const stride =
+      running || pose.swim
+        ? Math.round(
+            Math.sin(pose.seconds * (pose.swim ? 5 : 11)) * (pose.swim ? 8 : 5),
+          )
+        : 0;
     const bob = running ? Math.abs(Math.sin(pose.seconds * 14)) * 2 : 0;
     const x = heroX;
     y -= bob;
+    ctx.save();
+    if (pose.swim) {
+      ctx.translate(x + 12, y + 27);
+      ctx.rotate(1.15 + Math.sin(pose.seconds * 2) * 0.08);
+      ctx.translate(-x - 12, -y - 27);
+    } else {
+      const squash = pose.duck ? 0.56 : 1 - pose.landing * 0.16;
+      ctx.translate(x + 12, y + 54);
+      ctx.scale(pose.duck ? 1.15 : 1 + pose.landing * 0.12, squash);
+      ctx.translate(-x - 12, -y - 54);
+    }
     // Little frog adventurer: scarf, backpack, boots and a wooden sword.
     rect(x - 12, y + 20, 14, 25, "#82684b");
     rect(x - 16, y + 23, 7, 19, "#b89767");
@@ -98,7 +146,7 @@ export function startJourney(getSnapshot) {
     rect(x - 5, y + 13, 6, 4, "#d49a83");
     rect(x + 26, y + 13, 5, 4, "#d49a83");
     rect(x - 5, y + 25, 36, 6, "#d28b65");
-    rect(x - 15, y + 29, 16, 7, "#bf765e");
+    rect(x - 15, y + 29 + Math.sin(pose.seconds * 7) * 2, 16, 7, "#bf765e");
     if (attack) {
       const swing = Math.sin(pose.seconds * 9) > -0.2;
       rect(x + 28, y + 28, 14, 8, "#8ab96b");
@@ -109,6 +157,9 @@ export function startJourney(getSnapshot) {
         rect(x + 78, y + 11, 7, 22, "#fcf0c1");
         star(x + 92, y + 22, "#ffe5a3", 2);
       } else rect(x + 41, y + 4, 6, 28, "#d6dec6");
+    } else if (pose.swim) {
+      rect(x + 28, y + 23 + Math.sin(pose.seconds * 5) * 5, 10, 15, "#8ab96b");
+      rect(x - 10, y + 26 - Math.sin(pose.seconds * 5) * 5, 8, 15, "#8ab96b");
     } else {
       rect(x + 26, y + 30, 8, 11, "#8ab96b");
       rect(x + 33, y + 12, 5, 29, "#c3cfb3");
@@ -118,6 +169,7 @@ export function startJourney(getSnapshot) {
       star(x - 28, y + 4, "#e8bd63", 3);
       star(x + 51, y - 5, "#e8bd63", 3);
     }
+    ctx.restore();
   }
   function slime(x, y, t, hit = false) {
     const bounce = Math.abs(Math.sin(t * 3)) * 5;
@@ -164,6 +216,77 @@ export function startJourney(getSnapshot) {
       rect(x + 16, ground - 54, 20, 4, "#c2ad87");
     }
   }
+  function underground(scroll, t) {
+    rect(0, 0, 960, 420, "#243137");
+    rect(0, 105, 960, 232, "#34464a");
+    for (let i = -1; i < 10; i++) {
+      const x = i * 135 - ((scroll * 0.24) % 135);
+      rect(x, 52, 82, 216, "#2c3a40");
+      rect(x + 12, 34, 54, 40, "#2c3a40");
+      rect(x + 16, 205, 37, 132, "#3e5052");
+    }
+    for (let i = -1; i < 10; i++) {
+      const x = i * 127 - ((scroll * 0.65) % 127);
+      rect(x, 0, 75, 58, "#192a30");
+      rect(x + 17, 55, 39, 31, "#192a30");
+      rect(x + 29, 82, 15, 20, "#192a30");
+      if (i % 2 === 0) {
+        star(x + 65, 290, "#71c4bc", 4);
+        rect(x + 59, 288, 9, 49, "#57918d");
+        rect(x + 72, 306, 7, 31, "#8ccebc");
+      } else {
+        rect(x + 10, 153, 6, 31, "#a27a57");
+        rect(x + 7, 144 - Math.sin(t * 7 + i) * 3, 12, 15, "#e0b96f");
+        rect(x + 10, 147, 6, 11, "#f5df9a");
+      }
+    }
+  }
+  function underwater(scroll, t, night) {
+    rect(0, 0, 960, 420, night ? "#183e56" : "#427f91");
+    rect(0, 94, 960, 326, night ? "#20495b" : "#448b98");
+    rect(0, 212, 960, 208, night ? "#255366" : "#3b7e8a");
+    ctx.globalAlpha = night ? 0.05 : 0.09;
+    for (let i = 0; i < 7; i++) {
+      ctx.fillStyle = "#d4f2dd";
+      ctx.beginPath();
+      const x = i * 180 + Math.sin(t * 0.3 + i) * 15;
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x + 42, 0);
+      ctx.lineTo(x + 120, 337);
+      ctx.lineTo(x + 48, 337);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    for (let i = -1; i < 12; i++) {
+      const x = i * 103 - ((scroll * 0.4) % 103),
+        sway = Math.sin(t * 1.8 + i) * 6;
+      rect(x, 280, 6, 57, "#3f7974");
+      rect(x + sway, 260, 6, 25, "#4d9384");
+      rect(x + sway + 4, 250, 7, 17, "#68a693");
+      if (i % 2 === 0) {
+        rect(x + 32, 302, 5, 35, "#b08893");
+        rect(x + 24, 311, 21, 5, "#c79a9e");
+        rect(x + 24, 297, 5, 17, "#c79a9e");
+        rect(x + 41, 301, 5, 13, "#c79a9e");
+      }
+    }
+    for (let i = 0; i < 6; i++) {
+      const x =
+          ((((i * 201 - scroll * 0.18 + t * 12) % 1100) + 1100) % 1100) - 60,
+        y = 135 + (i % 3) * 43 + Math.sin(t + i) * 6;
+      rect(x, y, 23, 11, i % 2 ? "#b7b68f" : "#91baba");
+      rect(x - 7, y - 3, 7, 17, i % 2 ? "#a5a57e" : "#7ba7a9");
+      rect(x + 18, y + 3, 3, 3, "#2a545d");
+    }
+    for (let i = 0; i < 20; i++) {
+      const x = (i * 137 - scroll * 0.12 + Math.sin(t + i) * 5 + 9600) % 960,
+        y = 330 - ((t * 18 + i * 43) % 320);
+      ctx.strokeStyle = "#a9dfd55c";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(Math.round(x), Math.round(y), (i % 3) + 2, (i % 3) + 2);
+    }
+  }
   function draw(snapshot) {
     const pose = journeyPose(snapshot);
     const scenery =
@@ -174,7 +297,7 @@ export function startJourney(getSnapshot) {
       coast = scenery === "coast";
     const castle = ["castle", "boss"].includes(scenery),
       finish = snapshot.chapter === "finish";
-    const lighting = daylight(snapshot.progress),
+    const lighting = daylight(),
       palette = lighting.palette;
     canvas.dataset.daylight = lighting.phase;
     canvas.dataset.scenery = scenery;
@@ -228,7 +351,11 @@ export function startJourney(getSnapshot) {
       rect(x + 26, 184 - (i % 2) * 28, 150, 153, palette.far);
       rect(x + 52, 168 - (i % 2) * 28, 96, 169, palette.far);
     }
-    if (coast) {
+    if (scenery === "cave") {
+      underground(scroll, pose.seconds);
+    } else if (scenery === "ocean") {
+      underwater(scroll, pose.seconds, lighting.phase === "night");
+    } else if (coast) {
       rect(
         0,
         225,
@@ -268,9 +395,43 @@ export function startJourney(getSnapshot) {
           "#7c8061",
         );
       }
-    rect(0, ground, 960, 83, palette.earth);
-    rect(0, ground, 960, 9, palette.grass);
-    rect(0, ground + 9, 960, 7, castle ? "#6d805b" : "#789964");
+    const undergroundScene = scenery === "cave",
+      underwaterScene = scenery === "ocean";
+    rect(
+      0,
+      ground,
+      960,
+      83,
+      undergroundScene
+        ? "#435151"
+        : underwaterScene
+          ? "#b8b18b"
+          : palette.earth,
+    );
+    rect(
+      0,
+      ground,
+      960,
+      9,
+      undergroundScene
+        ? "#657374"
+        : underwaterScene
+          ? "#d1c79d"
+          : palette.grass,
+    );
+    rect(
+      0,
+      ground + 9,
+      960,
+      7,
+      undergroundScene
+        ? "#354747"
+        : underwaterScene
+          ? "#a8a17e"
+          : castle
+            ? "#6d805b"
+            : "#789964",
+    );
     for (let i = -1; i < 35; i++) {
       const x = i * 34 - (scroll % 34);
       rect(
@@ -278,14 +439,30 @@ export function startJourney(getSnapshot) {
         ground + 26 + (i % 3) * 13,
         15,
         5,
-        castle ? "#635c50" : "#9d8968",
+        undergroundScene
+          ? "#344647"
+          : underwaterScene
+            ? "#a5a180"
+            : castle
+              ? "#635c50"
+              : "#9d8968",
       );
-      if (i % 3 === 0) {
+      if (i % 3 === 0 && !undergroundScene && !underwaterScene) {
         rect(x, ground - 7, 3, 7, palette.grass);
         rect(x + 5, ground - 4, 3, 4, palette.grass);
       }
     }
-    if (!boss && !finish) {
+    if (scenery === "cave" && !boss && !finish) {
+      const first = Math.max(0, Math.floor((pose.distance - 500) / 580));
+      for (let i = first; i < first + 4; i++) {
+        const x = heroX + 350 + i * 580 - pose.distance;
+        rect(x - 90, 0, 220, ground - 43, "#203237");
+        rect(x - 90, ground - 61, 220, 18, "#526466");
+        for (let j = 0; j < 6; j++)
+          rect(x - 83 + j * 37, ground - 58, 24, 5, "#607373");
+      }
+    }
+    if (!boss && !finish && !["cave", "ocean"].includes(scenery)) {
       const first = Math.max(0, Math.floor((pose.distance - 500) / 580));
       for (let i = first; i < first + 4; i++) {
         const x = heroX + 350 + i * 580 - pose.distance;
@@ -345,7 +522,46 @@ export function startJourney(getSnapshot) {
       text("QUEST CLEAR", 610, 158, 23, "#4b654f", "center");
       text("BAN DA LAM DUOC!", 610, 182, 12, "#6e805e", "center");
     }
-    hero(ground - 54 - pose.jump, pose, snapshot);
+    const heroY = pose.swim
+      ? ground - 145 + Math.sin(pose.seconds * 2.2) * 9
+      : ground - 54 - pose.jump;
+    ctx.globalAlpha = 0.13;
+    rect(heroX - 12, ground - 3, 52, 4, "#152b31");
+    ctx.globalAlpha = 1;
+    if (pose.landing > 0) {
+      for (let i = 0; i < 5; i++)
+        rect(
+          heroX - 15 + i * 14 + (i - 2) * (1 - pose.landing) * 12,
+          ground - 5 - (1 - pose.landing) * 12,
+          4,
+          3,
+          "#d6c6a2",
+        );
+    }
+    hero(heroY, pose, snapshot);
+    if (pose.swim) {
+      for (let i = 0; i < 3; i++) {
+        const age = (pose.seconds * 1.3 + i * 0.33) % 1;
+        ctx.strokeStyle = "#c2e8df99";
+        ctx.strokeRect(
+          heroX + 35 + age * 15,
+          heroY + 20 - age * 38,
+          3 + age * 3,
+          3 + age * 3,
+        );
+      }
+    }
+    if (previousScenery !== scenery) {
+      if (previousScenery) transitionStart = snapshot.elapsedMs;
+      previousScenery = scenery;
+    }
+    const transitionAge = (snapshot.elapsedMs - transitionStart) / 1000;
+    if (transitionStart && transitionAge < 1.2) {
+      ctx.globalAlpha = 0.17 * (1 - transitionAge / 1.2);
+      rect(0, 0, 960, 420, "#edf0d5");
+      ctx.globalAlpha = 1;
+    }
+
     if (snapshot.status === "idle") {
       text("SAN SANG KHI BAN SAN SANG", 480, 389, 11, "#fff0cd", "center");
     } else if (snapshot.status === "paused") {
@@ -368,7 +584,8 @@ export function startJourney(getSnapshot) {
     canvas.dataset.status = snapshot.status;
     if (
       previousChapter !== snapshot.chapter ||
-      previousStatus !== snapshot.status
+      previousStatus !== snapshot.status ||
+      previousStatusScenery !== scenery
     ) {
       document.querySelector("#journey-status").textContent =
         snapshot.status === "idle"
@@ -379,14 +596,19 @@ export function startJourney(getSnapshot) {
               ? "Boss đã bị đánh bại. Bạn đã hoàn thành phiên tập trung!"
               : boss
                 ? "Nhân vật đang tự đánh boss. Cứ tiếp tục tập trung nhé."
-                : `Đang đi qua ${chapterNames[snapshot.chapter].toLowerCase()}.`;
+                : scenery === "ocean"
+                  ? "Đang bơi qua biển xanh. Bạn cứ tập trung, mình tự lo đường đi."
+                  : scenery === "cave"
+                    ? "Đang chui qua đường hầm pha lê. Từng bước nhỏ thôi nhé."
+                    : `Đang đi qua ${(chapterNames[scenery] || "bờ biển").toLowerCase()}.`;
       previousChapter = snapshot.chapter;
       previousStatus = snapshot.status;
+      previousStatusScenery = scenery;
     }
   }
   function loop() {
     const snap = getSnapshot();
-    const key = `${snap.status}:${snap.chapter}:${snap.scenery}:${Math.floor(snap.elapsedMs / 1000)}`;
+    const key = `${Math.floor(Date.now() / 60000)}:${snap.status}:${snap.chapter}:${snap.scenery}:${Math.floor(snap.elapsedMs / 1000)}`;
     if (!reduced || key !== lastStaticKey) {
       draw(
         reduced

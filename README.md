@@ -25,10 +25,10 @@ Bộ đếm dùng thời điểm kết thúc thực tế để tránh trôi th�
 
 ## Hành trình tập trung tự động
 
-Mở **Trạm tập trung**, chọn 15/25/45 phút và bấm **Bắt đầu tập trung**. Nhân vật tự chạy, nhảy qua hố/chướng ngại và đánh quái; không cần điều khiển bằng phím hay nút game. Cảnh đi qua đồng cỏ (0–30%), rừng (30–65%), cổng thành (65–90%) và đánh boss trong 10% thời gian cuối. Hết giờ, boss bị đánh bại và nhân vật về đích.
+Mở **Trạm tập trung**, chọn 15/25/45 phút và bấm **Bắt đầu tập trung**. Nhân vật tự chạy, nhảy qua hố/chướng ngại và đánh quái; không cần điều khiển bằng phím hay nút game. Cảnh đi qua đồng cỏ (0–20%), rừng (20–40%), hầm pha lê (40–60%), biển (60–80%), cổng thành (80–90%) và đánh boss trong 10% thời gian cuối. Nhân vật tự cúi qua trần hầm thấp và bơi dưới biển với nhịp tay chân, bong bóng, cá và rong biển. Nhảy dùng quỹ đạo parabol, có độ nén khi tiếp đất và bụi nhẹ. Hết giờ, boss bị đánh bại và nhân vật về đích.
 
 Hoạt ảnh lấy tiến độ trực tiếp từ thời gian tập trung đã trôi qua. Tạm dừng đóng băng cả đồng hồ lẫn nhân vật. Chuyển tab để làm việc vẫn tiếp tục phiên; quay lại hoặc tải lại sẽ ở đúng tiến độ. Đặt lại bắt đầu hành trình mới. Số phiên hoàn thành được lưu riêng và chỉ tăng một lần mỗi phiên. Nhiệm vụ không tự hoàn thành khi hết giờ: người dùng xác nhận đã làm xong để nhận xu và XP.
 
-Trong khung hành trình có đồng hồ còn lại, phần trăm tiến độ và quote của người bạn đồng hành. Thanh tiến độ chạy từ 0–100% theo thời lượng thực tế của phiên. Bầu trời chuyển ngày → hoàng hôn → đêm → bình minh theo tiến độ (không theo giờ địa phương). Có thể giữ cảnh tự động theo từng chặng hoặc chọn đồng cỏ, rừng, bờ biển mà không đặt lại đồng hồ.
+Trong khung hành trình có đồng hồ còn lại, phần trăm tiến độ và quote của người bạn đồng hành. Thanh tiến độ chạy từ 0–100% theo thời lượng thực tế của phiên. Bầu trời theo giờ và múi giờ hiện tại trên thiết bị: bình minh 05:00–07:00, ban ngày 07:00–17:00, hoàng hôn 17:00–19:00, ban đêm 19:00–05:00. Màu chuyển dần theo giờ thực, kể cả khi phiên tạm dừng hoặc đã hoàn thành; không cần quyền vị trí. Có thể giữ cảnh tự động theo từng chặng hoặc chọn đồng cỏ, rừng, bờ biển, đường hầm, dưới biển mà không đặt lại đồng hồ.
 
 Quote đổi sau mỗi phút tập trung, dừng cùng phiên và có nút đổi thủ công. Các giọng gồm xen kẽ, dễ thương, hài hước, thực tế và thúc nhẹ; giọng thúc nhẹ được chọn riêng. Lựa chọn cảnh và giọng động viên được lưu trên trình duyệt.

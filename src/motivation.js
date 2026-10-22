@@ -43,9 +43,10 @@ export function focusQuote(mode, elapsedMs, offset = 0, status = "running") {
       : pools[mode];
   return list[(Math.floor(elapsedMs / 60000) + offset) % list.length];
 }
-export function daylight(progress) {
-  const p = Math.max(0, Math.min(1, progress));
-  const stops = [
+export function daylight(now = new Date()) {
+  // Date getters use the browser/device timezone, never the deployment server.
+  const p = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+  const colors = [
     {
       at: 0,
       sky: "#d9e9dd",
@@ -97,6 +98,18 @@ export function daylight(progress) {
       cloud: "#f9e9cc",
     },
   ];
+  const stops = [
+    { ...colors[2], at: 0 },
+    { ...colors[2], at: 5 },
+    { ...colors[4], at: 6 },
+    { ...colors[0], at: 7 },
+    { ...colors[0], at: 17 },
+    { ...colors[1], at: 18 },
+    { ...colors[2], at: 19 },
+    { ...colors[2], at: 24 },
+  ];
+  const phase =
+    p < 5 || p >= 19 ? "night" : p < 7 ? "dawn" : p < 17 ? "day" : "sunset";
   const b = stops.find((s) => s.at >= p) || stops.at(-1),
     a = stops[Math.max(0, stops.indexOf(b) - 1)];
   const amount = b.at === a.at ? 0 : (p - a.at) / (b.at - a.at);
@@ -119,15 +132,14 @@ export function daylight(progress) {
   );
   return {
     palette,
-    phase: p < 0.3 ? "day" : p < 0.6 ? "sunset" : p < 0.93 ? "night" : "dawn",
-    label:
-      p < 0.3
-        ? "Ban ngày"
-        : p < 0.6
-          ? "Hoàng hôn"
-          : p < 0.93
-            ? "Ban đêm"
-            : "Bình minh",
-    night: Math.max(0, Math.min(1, (p - 0.55) / 0.15, (0.96 - p) / 0.06)),
+    phase,
+    label: {
+      night: "Ban đêm",
+      dawn: "Bình minh",
+      day: "Ban ngày",
+      sunset: "Hoàng hôn",
+    }[phase],
+    night:
+      p < 5 || p >= 19 ? 1 : p < 7 ? (7 - p) / 2 : p >= 17 ? (p - 17) / 2 : 0,
   };
 }
