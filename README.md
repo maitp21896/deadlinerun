@@ -32,3 +32,9 @@ Hoạt ảnh lấy tiến độ trực tiếp từ thời gian tập trung đã 
 Trong khung hành trình có đồng hồ còn lại, phần trăm tiến độ và quote của người bạn đồng hành. Thanh tiến độ chạy từ 0–100% theo thời lượng thực tế của phiên. Bầu trời theo giờ và múi giờ hiện tại trên thiết bị: bình minh 05:00–07:00, ban ngày 07:00–17:00, hoàng hôn 17:00–19:00, ban đêm 19:00–05:00. Màu chuyển dần theo giờ thực, kể cả khi phiên tạm dừng hoặc đã hoàn thành; không cần quyền vị trí. Có thể giữ cảnh tự động theo từng chặng hoặc chọn đồng cỏ, rừng, bờ biển, đường hầm, dưới biển mà không đặt lại đồng hồ.
 
 Quote đổi sau mỗi phút tập trung, dừng cùng phiên và có nút đổi thủ công. Các giọng gồm xen kẽ, dễ thương, hài hước, thực tế và thúc nhẹ; giọng thúc nhẹ được chọn riêng. Lựa chọn cảnh và giọng động viên được lưu trên trình duyệt.
+
+## Mode Office
+
+Trong **Trạm tập trung**, chọn **Game** hoặc **Office**. Đổi mode giữ nguyên thời gian, nhiệm vụ, tiến độ, quote và phần thưởng; lựa chọn mode được lưu khi tải lại. Office là phòng làm việc pixel với sáu đồng nghiệp, CRT, cây xanh, cà phê, radio cổ, mèo ngủ và cửa sổ nhìn ra phố. Nhịp gõ phím và các hoạt động nhỏ dùng thời gian tập trung; tạm dừng thì mọi người nghỉ, hết phiên cùng nghỉ giải lao. Cửa sổ và đồng hồ treo tường theo giờ địa phương trên thiết bị.
+
+Âm mưa là ambience tùy chọn, tổng hợp trong trình duyệt, mặc định tắt. Bấm **Âm mưa** trong phiên Office đang chạy để bật/tắt. Âm thanh dừng khi tạm dừng, kết thúc, đổi sang Game hoặc rời màn hình tập trung; không tự phát sau khi tải lại. Mưa ngoài cửa sổ là chi tiết trang trí, không dự báo thời tiết.

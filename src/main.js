@@ -1,3 +1,6 @@
+import { startOffice, createOfficeAmbience } from "./office.js";
+const officeAudio = createOfficeAmbience();
+let officeSound = false;
 import { daylight, quoteModes, focusQuote } from "./motivation.js";
 let focusQuoteOffset = 0;
 import "./style.css";
@@ -44,6 +47,14 @@ const icon = (name) =>
 function render() {
   stopJourney?.();
   stopJourney = null;
+  if (
+    tab !== "focus" ||
+    state.focusMode !== "office" ||
+    state.focusSession.status !== "running"
+  ) {
+    officeAudio.pause();
+    officeSound = false;
+  }
   const active = state.tasks.filter((t) => !t.done);
   const progress = state.tasks.length
     ? Math.round(
@@ -65,7 +76,7 @@ function render() {
         "",
       )}</nav><div class="sidebar-bottom"><div class="mini-flower">✿</div><p>Đi chậm cũng được.<br>Miễn là mình vẫn đi.</p><span>MADE FOR YOUR NEXT SMALL WIN</span></div><div class="profile"><div class="avatar">🐸</div><div><strong>Deadline warrior</strong><small>Level ${1 + Math.floor(state.xp / 100)} · Người mới phiêu lưu</small></div><span class="online"></span></div></aside>
 <div class="main-wrap"><header><div><span class="status-dot"></span> MỘT NGÀY TỐT ĐỂ BẮT ĐẦU</div><div class="header-right"><span class="coin">✦</span><strong>${state.coins}</strong><span class="header-divider"></span><span class="date">${new Intl.DateTimeFormat("vi-VN", { day: "numeric", month: "long" }).format(new Date())}</span><span class="header-avatar">🐸</span></div></header><main>
-<div class="page-heading"><div class="eyebrow">LET'S MAKE A LITTLE PROGRESS</div><div class="title-row"><div><h1>${{ quests: "Deadline đang chờ.<br>Mình bắt đầu nhé?", focus: "Bạn lo deadline.<br>Mình lo hành trình.", rewards: "Làm hết mình.<br>Thưởng thật xứng.", bag: "Niềm vui nhỏ.<br>Dành riêng cho bạn." }[tab]}</h1><p>${{ quests: "Không cần hoàn hảo. Chỉ cần tiến thêm một bước nhỏ.", focus: "Mỗi phút bạn tập trung, người bạn nhỏ lại tiến thêm một đoạn đường.", rewards: "Một vòng quay, một chút niềm vui ngoài đời.", bag: "Những phần thưởng bạn đã tự mình kiếm được." }[tab]}</p></div><button class="button dark" id="add-task"><span>＋</span> Thêm nhiệm vụ</button></div></div>
+<div class="page-heading"><div class="eyebrow">LET'S MAKE A LITTLE PROGRESS</div><div class="title-row"><div><h1>${{ quests: "Deadline đang chờ.<br>Mình bắt đầu nhé?", focus: state.focusMode === "office" ? "Một góc yên tĩnh.<br>Cùng nhau làm việc." : "Bạn lo deadline.<br>Mình lo hành trình.", rewards: "Làm hết mình.<br>Thưởng thật xứng.", bag: "Niềm vui nhỏ.<br>Dành riêng cho bạn." }[tab]}</h1><p>${{ quests: "Không cần hoàn hảo. Chỉ cần tiến thêm một bước nhỏ.", focus: state.focusMode === "office" ? "Một chút mưa ngoài cửa sổ, một chút ấm áp từ những người đồng hành." : "Mỗi phút bạn tập trung, người bạn nhỏ lại tiến thêm một đoạn đường.", rewards: "Một vòng quay, một chút niềm vui ngoài đời.", bag: "Những phần thưởng bạn đã tự mình kiếm được." }[tab]}</p></div><button class="button dark" id="add-task"><span>＋</span> Thêm nhiệm vụ</button></div></div>
 ${
   tab === "quests"
     ? `<section class="hero"><div class="hero-copy"><span class="hero-badge"><span></span> YOUR NEXT CHAPTER STARTS NOW</span><h2>Boss cuối không đáng sợ.<br>Để mai mới đáng sợ.</h2><p>Bạn tập trung làm việc, nhân vật tự vượt chướng ngại.<br>Cùng nhau đi đến cuối hành trình.</p><button class="button dark" id="hero-focus">Bắt đầu hành trình <span>→</span></button></div><div class="pixel-scene"><div class="scene-tag">LEVEL 01 <span>•</span> THE BEGINNING</div><div class="cloud c1"></div><div class="cloud c2"></div><div class="sun"></div><div class="mountain m1"></div><div class="mountain m2"></div><div class="pixel-tree t1"></div><div class="pixel-tree t2"></div><div class="flag"><span>⚑</span></div><div class="frog"><div class="eyes"></div><div class="mouth"></div><div class="blush"></div></div><span class="spark s1">✦</span><span class="spark s2">✧</span><div class="ground"></div><div class="scene-caption">ONE SMALL STEP. ONE BIG WIN.</div></div></section>
@@ -98,10 +109,12 @@ ${
   bind();
   updateClock();
   if (tab === "focus")
-    stopJourney = startJourney(() => ({
-      ...readSession(state.focusSession),
-      scenery: state.journeyScenery || "auto",
-    }));
+    stopJourney = (state.focusMode === "office" ? startOffice : startJourney)(
+      () => ({
+        ...readSession(state.focusSession),
+        scenery: state.journeyScenery || "auto",
+      }),
+    );
 }
 function taskCard(t) {
   const hours = (new Date(t.due) - Date.now()) / 36e5;
@@ -121,7 +134,8 @@ function focusView() {
     snapshot = readSession(session),
     selected = state.tasks.find((t) => t.id === session.taskId);
   const ongoing = ["running", "paused"].includes(snapshot.status);
-  return `<section class="focus-adventure"><div class="focus-session-heading"><div><span class="eyebrow">YOUR FOCUS, THEIR ADVENTURE</span><h2>${esc(selected?.title || "Một chặng đường dành riêng cho bạn")}</h2></div><span class="session-state" id="session-state"></span></div><div class="journey-landscape"><canvas id="journey-canvas" width="960" height="420" role="img" aria-label="Hành trình pixel tự động: nhân vật chạy, nhảy qua chướng ngại và đánh boss theo tiến độ phiên tập trung."></canvas><div class="journey-scene-label"><span class="scene-live-dot"></span><span id="chapter-label"></span><span class="auto-label" id="daylight-label"></span></div><div class="journey-hud"><span>THỜI GIAN CÒN LẠI</span><strong id="journey-clock"></strong><small id="hud-percent"></small></div><div class="journey-quote"><span>🐸 ĐỒNG ĐỘI NHẮN BẠN</span><blockquote id="focus-quote"></blockquote><button id="next-focus-quote" aria-label="Đổi quote tập trung">↻</button></div></div><div class="journey-settings"><label>Cảnh nền<select id="journey-scenery">${[
+  const office = state.focusMode === "office";
+  return `<section class="focus-adventure ${office ? "office-mode" : ""}"><div class="focus-mode-picker" role="group" aria-label="Chế độ tập trung"><div><span class="eyebrow">CHỌN KHÔNG GIAN CỦA BẠN</span><small>Cùng một phiên tập trung, một cảm hứng khác.</small></div><div class="mode-buttons"><button data-focus-mode="game" aria-pressed="${!office}">⚑ Game <span>Hành trình pixel</span></button><button data-focus-mode="office" aria-pressed="${office}">▦ Office <span>Góc làm việc ấm áp</span></button></div></div><div class="focus-session-heading"><div><span class="eyebrow">${office ? "SMALL STEPS STUDIO · EST. 1998" : "YOUR FOCUS, THEIR ADVENTURE"}</span><h2>${esc(selected?.title || (office ? "Có người làm việc cùng, deadline cũng nhẹ hơn." : "Một chặng đường dành riêng cho bạn"))}</h2></div><span class="session-state" id="session-state"></span></div><div class="journey-landscape"><canvas id="journey-canvas" width="960" height="${office ? 540 : 420}" role="img" aria-label="${office ? "Văn phòng pixel ấm áp với sáu đồng nghiệp đang làm việc, máy tính cổ, cây xanh, cửa sổ ngày đêm và chú mèo ngủ." : "Hành trình pixel tự động: nhân vật chạy, nhảy qua chướng ngại và đánh boss theo tiến độ phiên tập trung."}"></canvas><div class="journey-scene-label"><span class="scene-live-dot"></span><span id="chapter-label"></span><span class="auto-label" id="daylight-label"></span></div><div class="journey-hud"><span>THỜI GIAN CÒN LẠI</span><strong id="journey-clock"></strong><small id="hud-percent"></small></div><div class="journey-quote"><span>🐸 ĐỒNG ĐỘI NHẮN BẠN</span><blockquote id="focus-quote"></blockquote><button id="next-focus-quote" aria-label="Đổi quote tập trung">↻</button></div></div><div class="journey-settings">${office ? `<button id="office-sound" class="button outline" ${snapshot.status !== "running" ? "disabled" : ""} aria-pressed="${officeSound}">Âm mưa: ${officeSound ? "Bật" : "Tắt"}</button><span class="office-audio-note">Âm thanh tùy chọn · Bật khi bắt đầu phiên</span>` : ""}<label class="game-scenery-setting">Cảnh nền<select id="journey-scenery">${[
     ["auto", "Theo hành trình"],
     ["meadow", "Đồng cỏ"],
     ["forest", "Khu rừng"],
@@ -158,7 +172,7 @@ function focusView() {
     )
     .join(
       "",
-    )}</div><div class="focus-console"><div class="focus-clock-wrap"><span class="eyebrow">${snapshot.status === "complete" ? "MỘT CHẶNG ĐƯỜNG ĐÃ HOÀN THÀNH" : "THỜI GIAN DÀNH CHO ĐIỀU QUAN TRỌNG"}</span><div class="timer" id="clock" role="timer" aria-label="Thời gian tập trung còn lại"></div><p id="journey-status" role="status" aria-live="polite"></p></div><div class="focus-console-controls"><div class="duration-picker">${[15, 25, 45].map((n) => `<button data-duration="${n}" class="${session.totalMs === n * 60000 ? "active" : ""}" ${ongoing ? "disabled" : ""}>${n} phút</button>`).join("")}</div><div class="focus-actions"><button class="button dark" id="toggle-timer">${snapshot.status === "running" ? "Tạm dừng" : snapshot.status === "paused" ? "Tiếp tục hành trình →" : snapshot.status === "complete" ? "Bắt đầu phiên mới →" : "Bắt đầu tập trung →"}</button><button class="button outline" id="reset-timer" aria-label="Đặt lại phiên tập trung">↻</button></div>${snapshot.status === "complete" && selected && !selected.done ? '<button class="text-button" id="complete-focus-task">Tôi đã làm xong nhiệm vụ · Nhận 20 xu ✓</button>' : '<span class="focus-hint">Cứ làm việc của bạn. Nhân vật sẽ tự lo phần còn lại.</span>'}</div></div><div class="focus-bottom"><span>✦ ${state.focusRuns || 0} hành trình đã hoàn thành</span><span>Tiến độ vẫn tiếp tục khi bạn chuyển tab làm việc.</span></div></section><div class="journey-note"><span>☁</span><p>Mỗi phút tập trung là một đoạn đường đã đi.<small>Bạn làm việc, người bạn nhỏ tiếp tục hành trình. Nghỉ một chút bất cứ khi nào bạn cần.</small></p></div>`;
+    )}</div><div class="focus-console"><div class="focus-clock-wrap"><span class="eyebrow">${snapshot.status === "complete" ? "MỘT CHẶNG ĐƯỜNG ĐÃ HOÀN THÀNH" : "THỜI GIAN DÀNH CHO ĐIỀU QUAN TRỌNG"}</span><div class="timer" id="clock" role="timer" aria-label="Thời gian tập trung còn lại"></div><p id="journey-status" role="status" aria-live="polite"></p></div><div class="focus-console-controls"><div class="duration-picker">${[15, 25, 45].map((n) => `<button data-duration="${n}" class="${session.totalMs === n * 60000 ? "active" : ""}" ${ongoing ? "disabled" : ""}>${n} phút</button>`).join("")}</div><div class="focus-actions"><button class="button dark" id="toggle-timer">${snapshot.status === "running" ? "Tạm dừng" : snapshot.status === "paused" ? "Tiếp tục tập trung →" : snapshot.status === "complete" ? "Bắt đầu phiên mới →" : "Bắt đầu tập trung →"}</button><button class="button outline" id="reset-timer" aria-label="Đặt lại phiên tập trung">↻</button></div>${snapshot.status === "complete" && selected && !selected.done ? '<button class="text-button" id="complete-focus-task">Tôi đã làm xong nhiệm vụ · Nhận 20 xu ✓</button>' : '<span class="focus-hint">Cứ tập trung từng chút. Người bạn nhỏ luôn ở đây.</span>'}</div></div><div class="focus-bottom"><span>✦ ${state.focusRuns || 0} phiên tập trung hoàn thành</span><span>Tiến độ vẫn tiếp tục khi bạn chuyển tab làm việc.</span></div></section><div class="journey-note"><span>☁</span><p>Mỗi phút tập trung là một đoạn đường đã đi.<small>Bạn làm việc, người bạn nhỏ tiếp tục hành trình. Nghỉ một chút bất cứ khi nào bạn cần.</small></p></div>`;
 }
 function rewardView() {
   return `<section class="shop-grid"><div class="slot-panel"><span class="eyebrow">THE LITTLE JOY MACHINE</span><h2>Một vòng quay. Một niềm vui.</h2><p>20 xu mỗi lượt · Lượt nào cũng có quà</p><div class="slot-machine"><div class="slot-top">★ LUCKY LITTLE BREAK ★</div><div class="reels"><span>🎬</span><span>🍪</span><span>🎮</span></div><div class="slot-bottom">GOOD WORK DESERVES GOOD THINGS</div></div><button class="button dark spin-button" id="spin" ${state.coins < 20 || spinning ? "disabled" : ""}>${spinning ? "Đang quay…" : "✦ Quay thưởng · 20 xu"}</button><div id="spin-result" role="status"></div><p class="small-muted">${state.coins < 20 ? "Hoàn thành một nhiệm vụ để kiếm thêm xu." : "Bạn có " + state.coins + " xu. Chúc bạn có một khoảng nghỉ thật vui!"}</p></div><div class="reward-options"><div class="section-heading"><h2>Menu niềm vui</h2><button class="text-button" id="add-reward">＋ Thêm</button></div><p class="small-muted">Tự chọn những điều khiến bạn vui. Xác suất theo tần suất đã chọn.</p>${state.rewards
@@ -252,6 +266,8 @@ function updateClock() {
         ? { coast: "Bờ biển", ...chapterNames }[state.journeyScenery] ||
           chapterNames[snapshot.chapter]
         : chapterNames[snapshot.chapter];
+  if (label && state.focusMode === "office")
+    label.textContent = "Small Steps Studio";
   const fill = document.querySelector("#route-fill");
   if (fill)
     fill.style.width = `${Math.min(100, (snapshot.progress / 0.9) * 100)}%`;
@@ -269,11 +285,53 @@ function tickFocus() {
     state.focusRuns = (state.focusRuns || 0) + 1;
     save();
     if (tab === "focus") render();
-    toast("Về đích rồi! Boss đã bị đánh bại. Nghỉ một chút nhé 🌱");
+    toast(
+      state.focusMode === "office"
+        ? "Xong một phiên rồi! Cả phòng cùng nghỉ một chút ☕"
+        : "Về đích rồi! Boss đã bị đánh bại. Nghỉ một chút nhé 🌱",
+    );
   }
   updateClock();
 }
 function bind() {
+  document.querySelectorAll("[data-focus-mode]").forEach(
+    (button) =>
+      (button.onclick = () => {
+        state.focusMode = button.dataset.focusMode;
+        save();
+        render();
+      }),
+  );
+  document
+    .querySelector("#office-sound")
+    ?.addEventListener("click", async () => {
+      const button = document.querySelector("#office-sound");
+      button.disabled = true;
+      try {
+        if (officeSound) {
+          await officeAudio.pause();
+          officeSound = false;
+        } else {
+          await officeAudio.play();
+          if (
+            tab === "focus" &&
+            state.focusMode === "office" &&
+            state.focusSession.status === "running"
+          )
+            officeSound = true;
+          else await officeAudio.pause();
+        }
+        button.textContent = `Âm mưa: ${officeSound ? "Bật" : "Tắt"}`;
+        button.setAttribute("aria-pressed", String(officeSound));
+      } catch {
+        toast(
+          "Trình duyệt chưa phát được âm thanh. Bạn vẫn có thể tập trung cùng văn phòng.",
+        );
+      } finally {
+        button.disabled = false;
+      }
+    });
+
   document.querySelector("#next-focus-quote")?.addEventListener("click", () => {
     focusQuoteOffset++;
     updateClock();

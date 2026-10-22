@@ -2147,3 +2147,169 @@ dialog .button {
     right: 22px;
   }
 }
+.focus-mode-picker {
+  padding: 20px 28px;
+  border-bottom: 1px solid #e4e9db;
+  background: #f7f9f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.focus-mode-picker > div > small {
+  display: block;
+  font-size: 9px;
+  color: #9aa68b;
+  margin-top: 7px;
+}
+.mode-buttons {
+  display: flex;
+  gap: 7px;
+}
+.mode-buttons button {
+  border: 1px solid #dfe5d4;
+  border-radius: 5px;
+  background: #fff;
+  padding: 10px 18px;
+  min-width: 145px;
+  color: #89977c;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+}
+.mode-buttons button span {
+  display: block;
+  font-size: 8px;
+  font-weight: 400;
+  margin-top: 5px;
+  color: #9ba68d;
+}
+.mode-buttons button[aria-pressed="true"] {
+  background: #e8efd9;
+  border-color: #a8ba8b;
+  color: #506a39;
+  box-shadow: 0 2px 0 #b9c89f;
+}
+.office-mode .focus-mode-picker {
+  background: #f6f0e4;
+}
+.office-mode .mode-buttons button[aria-pressed="true"] {
+  background: #ece2cc;
+  border-color: #c4ae86;
+  color: #796044;
+  box-shadow: 0 2px 0 #d3bf9a;
+}
+.office-mode .focus-session-heading {
+  background: #fcfaf4;
+}
+.office-mode .journey-landscape {
+  background: #e0d9be;
+}
+.office-mode .journey-quote {
+  position: relative;
+  left: auto;
+  top: auto;
+  width: auto;
+  border: 0;
+  border-top: 1px solid #d6c9ae;
+  border-radius: 0;
+  background: #f4efdf;
+  padding: 15px 45px 15px 28px;
+  box-shadow: none;
+}
+.office-mode .journey-quote:after {
+  display: none;
+}
+.office-mode .journey-quote blockquote {
+  margin: 5px 0 0;
+  color: #7f6e51;
+}
+.office-mode .journey-quote > span {
+  color: #a19376;
+}
+.office-mode .journey-settings {
+  background: #faf7ee;
+  flex-wrap: wrap;
+}
+.office-mode .game-scenery-setting,
+.office-mode .journey-route {
+  display: none;
+}
+.office-mode .session-progress {
+  padding-top: 25px;
+}
+.office-mode .journey-scene-label {
+  background: #665e4bdd;
+}
+.office-mode .journey-hud {
+  background: #655d4deb;
+  border-color: #bba88677;
+  min-width: 110px;
+  padding: 9px 13px;
+}
+.office-mode .journey-hud strong {
+  font-size: 25px;
+}
+.office-mode .journey-note {
+  background: #faf6eb;
+}
+.office-audio-note {
+  font-size: 8px;
+  color: #a49780;
+}
+.office-mode #office-sound {
+  font-size: 9px;
+  padding: 9px 12px;
+  white-space: nowrap;
+  border-color: #d9cdb4;
+  color: #8b7756;
+}
+.office-mode #office-sound[aria-pressed="true"] {
+  background: #e8dfc7;
+  color: #786341;
+}
+@media (max-width: 760px) {
+  .focus-mode-picker {
+    padding: 16px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 13px;
+  }
+  .mode-buttons button {
+    min-width: 0;
+    flex: 1;
+    font-size: 11px;
+    padding: 10px 13px;
+  }
+  .mode-buttons button span {
+    font-size: 7px;
+  }
+  .focus-mode-picker > div > small {
+    font-size: 8px;
+  }
+  .office-mode .journey-hud {
+    min-width: 76px;
+    padding: 5px 8px;
+  }
+  .office-mode .journey-hud strong {
+    font-size: 19px;
+  }
+  .office-mode .journey-quote {
+    padding: 12px 38px 12px 16px;
+  }
+  .office-mode .journey-settings {
+    gap: 12px;
+  }
+  .office-mode .office-audio-note {
+    display: none;
+  }
+  .office-mode .journey-settings label {
+    flex: 1;
+  }
+  .office-mode #office-sound {
+    align-self: flex-end;
+  }
+  .office-mode .journey-settings > .office-audio-note {
+    display: none;
+  }
+}

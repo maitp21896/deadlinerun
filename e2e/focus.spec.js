@@ -302,3 +302,93 @@ test("automatic journey visits tunnels and ocean, with paused swimming and scene
     ),
   ).toBe(true);
 });
+
+test("office mode preserves the focus timer and preferences, with gentle activity and optional sound", async ({
+  page,
+}) => {
+  await begin(page);
+  await advanceTo(page, 0.1);
+  const before = await page.evaluate(
+    () =>
+      JSON.parse(localStorage.getItem("deadline-run-v1")).focusSession.endsAt,
+  );
+  await page.locator("[data-focus-mode=office]").click();
+  await page.clock.runFor(50);
+  const canvas = page.locator("#journey-canvas");
+  await expect(canvas).toHaveAttribute("data-mode", "office");
+  await expect(canvas).toHaveAttribute("data-activity", "working");
+  await expect(page.locator("[data-focus-mode=office]")).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page.locator("#journey-scenery")).toBeHidden();
+  await expect(page.locator(".journey-route")).toBeHidden();
+  await expect(page.locator("#office-sound")).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+  await page.locator("#office-sound").click();
+  await expect(page.locator("#office-sound")).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  expect(
+    await page.evaluate(
+      () =>
+        JSON.parse(localStorage.getItem("deadline-run-v1")).focusSession.endsAt,
+    ),
+  ).toBe(before);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({
+    path: "test-results/office-day.png",
+    fullPage: true,
+  });
+  await page.locator("#toggle-timer").click();
+  await page.clock.runFor(50);
+  await expect(canvas).toHaveAttribute("data-activity", "paused");
+  await expect(page.locator("#office-sound")).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+  const frozen = await canvas.evaluate((el) => el.toDataURL());
+  await page.clock.fastForward(1000);
+  expect(await canvas.evaluate((el) => el.toDataURL())).toBe(frozen);
+  await page.reload();
+  await page.clock.runFor(50);
+  await expect(canvas).toHaveAttribute("data-mode", "office");
+  await expect(page.locator("#office-sound")).toBeDisabled();
+  await page.clock.setSystemTime(new Date("2026-10-22T22:00:00+07:00"));
+  await page.clock.runFor(300);
+  await expect(canvas).toHaveAttribute("data-daylight", "night");
+  await page.screenshot({
+    path: "test-results/office-night.png",
+    fullPage: true,
+  });
+  await page.locator("#toggle-timer").click();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.clock.runFor(50);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: "test-results/office-mobile.png",
+    fullPage: true,
+  });
+  await page.locator("[data-focus-mode=game]").click();
+  await page.clock.runFor(50);
+  await expect(canvas).toHaveAttribute("data-action", "run");
+  await expect(page.locator("#journey-scenery")).toBeVisible();
+  await page.locator("[data-focus-mode=office]").click();
+  await advanceTo(page, 1.01);
+  await expect(canvas).toHaveAttribute("data-activity", "break");
+  await expect(page.locator("#journey-status")).toContainText(
+    "Cả phòng cùng nghỉ",
+  );
+  const state = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("deadline-run-v1")),
+  );
+  expect(state.focusRuns).toBe(1);
+  expect(state.coins).toBe(30);
+});
